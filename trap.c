@@ -83,14 +83,20 @@ trap(struct trapframe *tf)
   case T_PGFLT: ;
     uint newAddr = rcr2();
     uint curstack = USERMTOP - (myproc()->stackpgs * PGSIZE);
+    //printf("newAddr: %d\n", newAddr);
+    //printf("curstack: %d\n", curstack);
     if(newAddr < curstack && newAddr >= curstack-PGSIZE)
     {
+      cprintf("NEW PAGE ALLOCATED\n");    
       pde_t *newpgdir;
       newpgdir = myproc()->pgdir;
       if(allocuvm(newpgdir, PGROUNDDOWN(newAddr), curstack)==0)
       {
-        panic("Page fault: Invalid address. Did not add new page to Stack");
+	//panic("Page fault: Invalid address. Did not add new page to Stack\n");
+        cprintf("Stack pages: %d\n", myproc()->stackpgs);
+        exit();
       }
+      cprintf("NEW PAGE ALLOCATED\n");
       myproc()->stackpgs++;
     }
     break;

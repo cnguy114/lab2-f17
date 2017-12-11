@@ -78,6 +78,22 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
 
+
+//PART 1 ADDED TRAP HANDLER FOR PAGE FAULTS---------------------------------
+  case T_PGFLT: ;
+    uint newAddr = rcr2();
+    uint curstack = USERMTOP - (myproc()->stackpgs * PGSIZE);
+    if(newAddr < curstack && newAddr >= curstack-PGSIZE)
+    {
+      pde_t *newpgdir;
+      newpgdir = myproc()->pgdir;
+      if(allocuvm(newpgdir, PGROUNDDOWN(newAddr), curstack)==0)
+      {
+        panic("Page fault: Invalid address. Did not add new page to Stack");
+      }
+      myproc()->stackpgs++;
+    }
+    break;
   //PAGEBREAK: 13
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){
